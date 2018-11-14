@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-'use strict';
-
+import * as common from '@google-cloud/common';
+import {paginator} from '@google-cloud/paginator';
+import {promisifyAll} from '@google-cloud/promisify';
 import * as arrify from 'arrify';
 import Big from 'big.js';
-import * as common from '@google-cloud/common';
-import {promisifyAll} from '@google-cloud/promisify';
-import {paginator} from '@google-cloud/paginator';
 import * as extend from 'extend';
+
 const format = require('string-format-obj');
 import * as is from 'is';
 import * as r from 'request';
@@ -30,7 +29,7 @@ import {teenyRequest} from 'teeny-request';
 
 import {Dataset, DataSetOptions} from './dataset';
 import {Job, JobOptions} from './job';
-import {Table, TableField, TableSchema, TableRow, TableRowField, JobCallback, JobResponse, RowsCallback, RowsResponse} from './table';
+import {Table, TableField, TableSchema, TableRow, TableRowField, JobCallback, JobResponse, RowsCallback, RowsResponse, RowMetadata} from './table';
 import {GoogleErrorBody} from '@google-cloud/common/build/src/util';
 import {Readable, Duplex} from 'stream';
 
@@ -61,6 +60,8 @@ export interface Query {
   maxResults?: number;
   timeoutMs?: number;
   pageToken?: string;
+  destination?: Table;
+  defaultDataset?: Dataset;
 }
 
 export interface QueryOptions {
@@ -161,16 +162,6 @@ export interface QueryParameter {
   name?: string;
   parameterType: {type: string;};
   parameterValue: {arrayValues?: Array<{}>; structValues?: {}; value?: {}};
-}
-
-export interface CreateQueryJobOptions {
-  destination?: Table;
-  dryRun?: boolean;
-  location?: string;
-  jobId?: string;
-  jobPrefix?: string;
-  query?: string;
-  useLegacySql?: boolean;
 }
 
 export interface BigQueryOptions extends common.GoogleAuthOptions {
@@ -870,10 +861,9 @@ export class BigQuery extends common.Service {
    *   return job.getQueryResults();
    * });
    */
-  createQueryJob(options: CreateQueryJobOptions|string): Promise<JobResponse>;
-  createQueryJob(options: CreateQueryJobOptions|string, callback: JobCallback):
-      void;
-  createQueryJob(opts: CreateQueryJobOptions|string, callback?: JobCallback):
+  createQueryJob(options: Query|string): Promise<JobResponse>;
+  createQueryJob(options: Query|string, callback: JobCallback): void;
+  createQueryJob(opts: Query|string, callback?: JobCallback):
       void|Promise<JobResponse> {
     const options = typeof opts === 'object' ? opts : {query: opts};
     if (!options || !options.query) {
@@ -1659,3 +1649,5 @@ export {Table};
  * region_tag:bigquery_quickstart
  * Full quickstart example:
  */
+
+export {RowsCallback, RowsResponse, RowMetadata};

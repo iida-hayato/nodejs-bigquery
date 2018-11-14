@@ -29,12 +29,11 @@ import * as path from 'path';
 import * as r from 'request';
 import * as streamEvents from 'stream-events';
 import * as uuid from 'uuid';
-import {BigQuery, Job, Dataset, Query, QueryRowsResponse, QueryRowsCallback, SimpleQueryRowsResponse, SimpleQueryRowsCallback} from '../src';
+import {BigQuery, Job, Dataset, Query, SimpleQueryRowsResponse, SimpleQueryRowsCallback} from '../src';
 import {GoogleErrorBody} from '@google-cloud/common/build/src/util';
 import {Writable, Readable} from 'stream';
 import {teenyRequest} from 'teeny-request';
 import {File} from '@google-cloud/storage';
-import {CreateQueryJobOptions} from './dataset';
 import {JobMetadata} from './job';
 
 export interface JobMetadataCallback {
@@ -150,7 +149,7 @@ export interface TableMetadata {
   view?: string;
 }
 
-interface FormattedMetadata {
+export interface FormattedMetadata {
   schema?: TableSchema;
   friendlyName: string;
   name?: string;
@@ -220,7 +219,7 @@ class Table extends common.ServiceObject {
   dataset: Dataset;
   bigQuery: BigQuery;
   location?: string;
-  createReadStream: () => Readable;
+  createReadStream: (options?: GetRowsOptions) => Readable;
   constructor(dataset: Dataset, id: string, options?: TableOptions) {
     const methods = {
       /**
@@ -1295,9 +1294,9 @@ class Table extends common.ServiceObject {
    *
    * See {@link BigQuery#createQueryJob} for full documentation of this method.
    */
-  createQueryJob(options: CreateQueryJobOptions): Promise<JobResponse>;
-  createQueryJob(options: CreateQueryJobOptions, callback: JobCallback): void;
-  createQueryJob(options: CreateQueryJobOptions, callback?: JobCallback):
+  createQueryJob(options: Query): Promise<JobResponse>;
+  createQueryJob(options: Query, callback: JobCallback): void;
+  createQueryJob(options: Query, callback?: JobCallback):
       void|Promise<JobResponse> {
     return this.dataset.createQueryJob(options, callback!);
   }
